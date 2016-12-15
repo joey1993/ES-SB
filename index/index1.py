@@ -3,10 +3,10 @@ import os
 
 # Home
 HOME_DIR = os.getenv("HOME")
-client = Elasticsearch([{'host':'localhost','port':9200}])
+client = Elasticsearch([{'host':'localhost','port':9201}])
 
 
-g = open('/Users/zhoudonghua/Dropbox/LAB/category.txt','r')
+g = open('/home/joey/Dropbox/LAB/category.txt','r')
 line = g.readline()
 cat_dict = {}
 while line != '':
@@ -17,7 +17,7 @@ while line != '':
 g.close()
 
 
-f = open('/Users/zhoudonghua/Dropbox/Seg_sents.txt','r')
+f = open('/home/joey/Dropbox/Seg_sents.txt','r')
 line = f.readline()
 i = 1
 while line != '':

@@ -1,0 +1,49 @@
+Snowball 记录
+
+main.py
+main{
+	1. parse_seed_file -> seed_dict
+	2. 根据seed_dict建立tup，其中包含relation，subj，obj以及两个tag，such as【syptom，小儿神经纤维瘤，咖啡牛奶斑，disease，disease，1.0】并将所有tup存入seeds和tuples数组
+	3. 进入iternation，对于第i次iteration
+		3.1 建立candidate_tuples dict，key是每个tup，每个key的value还是dict，key是matches和raw_pattterns
+		3.2 对于每一个tup
+			3.2.1 count=包含该tup信息的句子数量
+			3.2.2 hits=所有满足要求的句子
+			3.2.3 提取hits中每个满足要求的句子的id，index，tokens，tagged_tokens信息，并生成raw_patterns
+		3.3 将所有raw_patterns进行clustering 存入clusterer
+		3.4 得到new_snowball_patterns，如果集合为空，break，否则一起存入snowball_patterns，写入patterns_f
+		3.5 counts数组每个元素是每个iteration要扫的句子数量（=总句子数量／iteration数），除了最后一个元素加上了remainer。现在对于每一句第i次循环需要处理的句子进行处理：
+			3.5.1 from_offset记录处理的单句在总数据库中的位置
+			3.5.2 判断句子是否包含seed的subj_tag，obj_tag，如果存在，生成classes文件中的Sentence类对象，并抽取连个tag对应的term组合成candidates
+			3.5.3 对candidates数组中包含的每个candidate以及其raw_pattern信息进行分析
+				3.5.3.1 计算raw_pattern与已有的pattern的相似度，找到大于阈值的最相似的一个，且如果candidate不在candidate_tuples中，将其加入
+				3.5.3.2 matches的value是相似度和原pattern，raw_pattern的value即新pattern
+		3.6 更新每一个存在的tuple的confidence，并将raw_pattern加入所有pattern中
+		3.7 将new_tuples中所有confidence大于阈值的条目存入seeds数组，如果数组长度为0则break，并扩展tuples数组
+}
+
+index.py
+main{
+	0. 有三个参数，分别是--letters（path是否包含特殊letter），--threads（线程数量）和--verbose（方便细节调试时使用，此时log输出更多的信息）
+	1. 读取需要存入数据库文件目录下所有子目录，排序，分别建立queue
+	2. 构建corenlp.parser
+	3. 根据用户自定义线程数量，对每一条线程建立logger和对应的IndexWorker对象
+	4. 把每个线程分别start最后join
+}
+class IndexWorker{
+	1. __init__继承了parallel.Worker的参数，还有queue，corenlp，logger三个参数
+	2. work{
+		2.1 获取一条path，read相应文件，通过parser分解为（xml，text）两种格式的文本
+		2.2 通过elasticsearch建立page和sentence的index
+		2.3 直至queue中所有文件扫描完终止任务
+	}
+}
+
+mappings.py
+main{
+	0. 两个参数，分别是--delete（清楚数据库指令）和--index（）
+	1. 如果指令是delete，删除所有数据库内容
+	2. 
+}
+
+

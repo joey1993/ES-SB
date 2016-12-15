@@ -326,18 +326,20 @@ class CandidateTuple(Tuple):
 ### SENTENCE ######################################################################
 
 class Sentence:
-    def __init__(self, page, index, tokens, tagged_tokens):
+    def __init__(self, page, index, tokens, tagged_tokens, title):
         self.page = page
         self.index = index
         self.tokens = tokens
         self.tagged_tokens = tagged_tokens
+        self.title = title
 
     
     def index_combinations_by_tuple(self, tup):
         combos = []
         s1 = tup.subj_string()
         s2 = tup.obj_string()
-        indices1 = [i for i in xrange(len(self.tagged_tokens)) if self.tagged_tokens[i] == s1]
+#        indices1 = [i for i in xrange(len(self.tagged_tokens)) if self.tagged_tokens[i] == s1]
+        indices1 = [-1]
         indices2 = [i for i in xrange(len(self.tagged_tokens)) if self.tagged_tokens[i] == s2]
 
         for i1 in indices1:
@@ -352,7 +354,8 @@ class Sentence:
         combos = []
         r1 = rgx.create_template_rgx(subj_tag)
         r2 = rgx.create_template_rgx(obj_tag)
-        indices1 = [i for i in xrange(len(self.tagged_tokens)) if r1.match(self.tagged_tokens[i])]
+#        indices1 = [i for i in xrange(len(self.tagged_tokens)) if r1.match(self.tagged_tokens[i])]
+        indices1 = [-1]
         indices2 = [i for i in xrange(len(self.tagged_tokens)) if r2.match(self.tagged_tokens[i])]
 
         for i1 in indices1:
@@ -382,9 +385,14 @@ class Sentence:
             tag_one = tup.subj_tag if i1 < i2 else tup.obj_tag
             tag_two = tup.obj_tag if i1 < i2 else tup.subj_tag
 
-            left = self.tokens[:i]
-            middle = self.tokens[i+1:j]
+#            left = self.tokens[:i]
+#            middle = self.tokens[i+1:j]
+#            right = self.tokens[j+1:]
+
+            left = self.tokens[:j]
+            middle = []
             right = self.tokens[j+1:]
+
             left_ctx = Context(self.preprocess_tokens(left)[-config.SNOWBALL_LR_MAX_WINDOW:],
                                config.SNOWBALL_LEFT_CTX_WEIGHT)
             middle_ctx = Context(self.preprocess_tokens(middle),
@@ -409,8 +417,8 @@ class Sentence:
             tag_one = subj_tag if i1 < i2 else obj_tag
             tag_two = obj_tag if i1 < i2 else subj_tag
 
-            left = self.tokens[:i]
-            middle = self.tokens[i+1:j]
+            left = self.tokens[:j]
+            middle = []
             right = self.tokens[j+1:]
             left_ctx = Context(self.preprocess_tokens(left)[-config.SNOWBALL_LR_MAX_WINDOW:],
                                config.SNOWBALL_LEFT_CTX_WEIGHT)
@@ -421,7 +429,7 @@ class Sentence:
 
             pattern = RawPattern(left_ctx, tag_one, middle_ctx, tag_two, right_ctx, self.page, self.index)
 
-            subj = self.tokens[i1]
+            subj = self.title
             obj = self.tokens[i2]
             tup = CandidateTuple(rel, subj, obj, subj_tag, obj_tag, 1.0, config.SNOWBALL_TUPLE_CONFIDENCE_UPDATE_FACTOR)
 

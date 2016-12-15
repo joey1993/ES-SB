@@ -95,14 +95,13 @@ def count_raw_sentences(index=config.ELASTICSEARCH_INDEX, doc_type=config.ELASTI
 def count_sentences_containing(tup, index=config.ELASTICSEARCH_INDEX, doc_type=config.ELASTICSEARCH_SENTENCE_TYPE):
     body = {
         "query": {
-            "filtered": {
-                "filter": {
-                    "and": [
-                        {"term": {"tagged_tokens": tup.subj_string()}},
-                        {"term": {"tagged_tokens": tup.obj_string()}}
+            "bool": {
+                    "must": [
+                        {"match": {"title": tup.subj_string()}},
+                        {"match": {"tagged_tokens": tup.obj_string()}}
                     ]
                 }
-            }
+            
         }
     }
 
@@ -151,13 +150,12 @@ def get_sentences_containing(tup, from_offset=0, size=config.ELASTICSEARCH_RESUL
     body = {
         "from": from_offset,
         "query": {
-            "filtered": {
-                "filter": {
-                    "and": [
-                        {"term": {"tagged_tokens": tup.subj_string()}},
-                        {"term": {"tagged_tokens": tup.obj_string()}}
+            "bool": {
+                    "must": [
+                        {"match": {"title": tup.subj_string()}},
+                        {"match": {"tagged_tokens": tup.obj_string()}}
                     ]
-                }
+                
             }
         }
     }
@@ -212,12 +210,9 @@ def get_sentences_with_tags(tag_one, tag_two, from_offset=0, size=config.ELASTIC
     body = {
         "from": from_offset,
         "query": {
-            "filtered": {
-                "filter": {
-                    "and": [
-                        {"term": {"entities": tag_one}},
-                        {"term": {"entities": tag_two}}
-                    ]
+            "bool": {
+                "must": {             
+                    "match": {"tags": tag_two}                
                 }
             }
         }

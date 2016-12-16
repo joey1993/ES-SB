@@ -18,6 +18,7 @@ def main():
     # output tuples/patterns files + main logger
     tuples_f = open(config.SNOWBALL_TUPLES_FILE, 'a')
     patterns_f = open(config.SNOWBALL_PATTERNS_FILE, 'a')
+    t = open('new_triples_cause','a')
     logger = log.create_logger("snowball", "snowball.log")
 
     # partition sentence search space by iteration
@@ -47,6 +48,7 @@ def main():
 
     # begin
     for i in xrange(config.SNOWBALL_NUM_ITERATIONS):
+        print i,'th iteration'
         logger.info("Beginning iteration %r", i+1)
 
         raw_patterns = []
@@ -156,14 +158,18 @@ def main():
         logger.info("Total tuples so far (roughly): %d", len(tuples))
 
         logger.info("Ending iteration %d", i+1)
-#
-#    logger.info("Writing tuples to: %r", config.SNOWBALL_TUPLES_FILE)
-#    for tup in tuples:
-#        io.write_line(tuples_f, tup)
-#
-#    # close files
-#    tuples_f.close()
-#    patterns_f.close()
+
+    logger.info("Writing tuples to: %r", config.SNOWBALL_TUPLES_FILE)
+    for tup in tuples:
+        io.write_line(tuples_f, tup)
+        string = str(tup.subj.encode('utf-8'))+' cause '+str(tup.obj.encode('utf-8'))
+        t.write(string+'\n')
+        
+
+    # close files
+    tuples_f.close()
+    patterns_f.close()
+    t.close()
 
     print "Done!"
 

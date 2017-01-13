@@ -16,9 +16,9 @@ def main():
     tuples = []
 
     # output tuples/patterns files + main logger
-    tuples_f = open(config.SNOWBALL_TUPLES_FILE, 'a')
-    patterns_f = open(config.SNOWBALL_PATTERNS_FILE, 'a')
-    t = open('new_triples_cause','a')
+    tuples_f = open(config.SNOWBALL_TUPLES_FILE, 'w')
+    patterns_f = open(config.SNOWBALL_PATTERNS_FILE, 'w')
+    t = open('new_triples_cause','w')
     logger = log.create_logger("snowball", "snowball.log")
 
     # partition sentence search space by iteration

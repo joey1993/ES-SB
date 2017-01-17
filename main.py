@@ -6,6 +6,35 @@ from config import config
 from pprint import pprint
 
 
+def loadKeyWordsFromFile(fileName):
+    if len(fileName) <= 0:
+        print "Nothing to read for file", fileName
+        return
+    print "Text is read from file: " + fileName
+    print ("---------------------------------------------")
+    retDic = {}
+    f = open(fileName, 'rb')
+    rdfLine = f.readline()
+    i = 0
+    while (rdfLine != ""):
+        i = i + 1
+        rdfLine = rdfLine.strip()
+        item = rdfLine.split("\t")
+
+        subject = item[0].decode('utf-8')
+        subject = subject.replace("_", " ")
+        Catgories = []
+        for cat in item[1].split(","):
+            Catgories.append(cat.decode('utf-8'))
+        if not subject in retDic:
+            retDic[subject] = Catgories
+        else:
+            for cat in Catgories:
+                retDic[subject].append(cat)
+        rdfLine = f.readline()
+    f.close()
+    return retDic
+
 def main():
     print "Running . . ."
 
@@ -20,6 +49,7 @@ def main():
     patterns_f = open(config.SNOWBALL_PATTERNS_FILE, 'w')
     t = open('new_triples_cause','w')
     logger = log.create_logger("snowball", "snowball.log")
+    key_words = loadKeyWordsFromFile(config.SNOWBALL_KEYWORDS_FILE)
 
     # partition sentence search space by iteration
     sentence_count = config.SNOWBALL_SENTENCE_CAP
@@ -48,7 +78,7 @@ def main():
 
     # begin
     for i in xrange(config.SNOWBALL_NUM_ITERATIONS):
-        print i,'th iteration'
+        print 'iteration ', i
         logger.info("Beginning iteration %r", i+1)
 
         raw_patterns = []
@@ -70,13 +100,13 @@ def main():
                                         source['tokens'],
                                         source['tagged_tokens'],
                                         source['title'])
-                raw_patterns.extend(sent.extract_raw_patterns(tup))
+                raw_patterns.extend(sent.extract_raw_patterns(tup,key_words))
 
         logger.info("Number of raw patterns: %d", len(raw_patterns))
         
         # cluster raw patterns
         logger.info("Clustering raw patterns . . .")
-        clusterer = classes.SinglePassClusteringAlgorithm(raw_patterns,
+        clusterer = classes.SinglePassClusteringAlgorithm(raw_patterns, #raw_patterns[] contains patterns collected from the match between sentences and seeds
                                                           config.SNOWBALL_MIN_PATTERN_SIMILARITY)
         clusterer.prepare()
         clusterer.cluster()

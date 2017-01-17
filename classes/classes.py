@@ -89,6 +89,7 @@ class Pattern:
         self.middle_ctx = middle_ctx
         self.tag_two = tag_two
         self.right_ctx = right_ctx
+        #self.page = page
 
 
     def matching_tags(self, other):
@@ -374,8 +375,50 @@ class Sentence:
 
         return new_tokens
 
+    def postprocess_tokens(self, tokens, dict, cat):
+        new_tokens = []
 
-    def extract_raw_patterns(self, tup):
+        for token in tokens:
+            new_tokens.append(token)
+            if token in dict[cat]:
+                new_tokens.append(token)
+            if token in dict['punctuation']:
+                new_tokens.append(token)
+
+        return new_tokens
+
+    def loadKeyWordsFromFile(self, fileName):
+        if len(fileName) <= 0:
+            print "Nothing to read for file", fileName
+            return
+        #print "Text is read from file: " + fileName
+        #print ("---------------------------------------------")
+        retDic = {}
+        f = open(fileName, 'rb')
+        rdfLine = f.readline()
+        i = 0
+        while (rdfLine != ""):
+            i= i + 1
+            rdfLine = rdfLine.strip()
+            item = rdfLine.split("\t")
+
+            subject = item[0].decode('utf-8')
+            subject = subject.replace("_", " ")
+            Catgories = []
+            for cat in item[1].split(","):
+                Catgories.append(cat.decode('utf-8'))
+            if not subject in retDic:
+                retDic[subject] = Catgories
+            else:
+                for cat in Catgories:
+                    retDic[subject].append(cat)
+            rdfLine = f.readline()
+        f.close()
+        return retDic
+
+    def extract_raw_patterns(self, tup, key_words):
+        #key_words = self.loadKeyWordsFromFile(config.SNOWBALL_KEYWORDS_FILE)
+
         patterns = []
         combos = self.index_combinations_by_tuple(tup)
 
@@ -393,11 +436,18 @@ class Sentence:
             middle = []
             right = self.tokens[j+1:]
 
-            left_ctx = Context(self.preprocess_tokens(left)[-config.SNOWBALL_LR_MAX_WINDOW:],
+            # left_ctx = Context(self.preprocess_tokens(left)[-config.SNOWBALL_LR_MAX_WINDOW:],
+            #                    config.SNOWBALL_LEFT_CTX_WEIGHT)
+            # middle_ctx = Context(self.preprocess_tokens(middle),
+            #                      config.SNOWBALL_MIDDLE_CTX_WEIGHT)
+            # right_ctx = Context(self.preprocess_tokens(right)[:config.SNOWBALL_LR_MAX_WINDOW],
+            #                     config.SNOWBALL_RIGHT_CTX_WEIGHT)
+
+            left_ctx = Context(self.postprocess_tokens(self.preprocess_tokens(left)[-config.SNOWBALL_LR_MAX_WINDOW:],key_words,'cause'),
                                config.SNOWBALL_LEFT_CTX_WEIGHT)
             middle_ctx = Context(self.preprocess_tokens(middle),
                                  config.SNOWBALL_MIDDLE_CTX_WEIGHT)
-            right_ctx = Context(self.preprocess_tokens(right)[:config.SNOWBALL_LR_MAX_WINDOW],
+            right_ctx = Context(self.postprocess_tokens(self.preprocess_tokens(left)[:config.SNOWBALL_LR_MAX_WINDOW],key_words,'cause'),
                                 config.SNOWBALL_RIGHT_CTX_WEIGHT)
 
             pattern = RawPattern(left_ctx, tag_one, middle_ctx, tag_two, right_ctx, self.page, self.index)
@@ -411,6 +461,8 @@ class Sentence:
         candidates = []
         combos = self.index_combinations_by_tags(subj_tag, obj_tag)
 
+        key_words = self.loadKeyWordsFromFile(config.SNOWBALL_KEYWORDS_FILE)
+
         for (i1, i2) in combos:
             i = i1 if i1 < i2 else i2
             j = i2 if i1 < i2 else i1
@@ -420,11 +472,17 @@ class Sentence:
             left = self.tokens[:j]
             middle = []
             right = self.tokens[j+1:]
-            left_ctx = Context(self.preprocess_tokens(left)[-config.SNOWBALL_LR_MAX_WINDOW:],
+            # left_ctx = Context(self.preprocess_tokens(left)[-config.SNOWBALL_LR_MAX_WINDOW:],
+            #                    config.SNOWBALL_LEFT_CTX_WEIGHT)
+            # middle_ctx = Context(self.preprocess_tokens(middle),
+            #                      config.SNOWBALL_MIDDLE_CTX_WEIGHT)
+            # right_ctx = Context(self.preprocess_tokens(right)[:config.SNOWBALL_LR_MAX_WINDOW],
+            #                     config.SNOWBALL_RIGHT_CTX_WEIGHT)
+            left_ctx = Context(self.postprocess_tokens(self.preprocess_tokens(left)[-config.SNOWBALL_LR_MAX_WINDOW:],key_words,'cause'),
                                config.SNOWBALL_LEFT_CTX_WEIGHT)
             middle_ctx = Context(self.preprocess_tokens(middle),
                                  config.SNOWBALL_MIDDLE_CTX_WEIGHT)
-            right_ctx = Context(self.preprocess_tokens(right)[:config.SNOWBALL_LR_MAX_WINDOW],
+            right_ctx = Context(self.postprocess_tokens(self.preprocess_tokens(left)[:config.SNOWBALL_LR_MAX_WINDOW],key_words,'cause'),
                                 config.SNOWBALL_RIGHT_CTX_WEIGHT)
 
             pattern = RawPattern(left_ctx, tag_one, middle_ctx, tag_two, right_ctx, self.page, self.index)

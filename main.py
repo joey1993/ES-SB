@@ -47,7 +47,7 @@ def main():
     # output tuples/patterns files + main logger
     tuples_f = open(config.SNOWBALL_TUPLES_FILE, 'w')
     patterns_f = open(config.SNOWBALL_PATTERNS_FILE, 'w')
-    t = open('new_triples_cause','w')
+    t = open(config.SNOWBALL_CURRENT_CAUSE_FILE,'w')
     logger = log.create_logger("snowball", "snowball.log")
     key_words = loadKeyWordsFromFile(config.SNOWBALL_KEYWORDS_FILE)
 
